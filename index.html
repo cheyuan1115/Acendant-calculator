@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>上升星座計算器</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 2em; background: #fefcf9; }
+    input, button, select { padding: 0.5em; margin: 0.5em 0; width: 100%; }
+    .result { margin-top: 1em; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>上升星座計算器（輸入生日＋城市）</h2>
+  <label>出生日期：<input type="date" id="birthDate"></label>
+  <label>出生時間（24小時制）：<input type="time" id="birthTime"></label>
+  <label>出生城市：</label>
+  <input type="text" id="birthCity" placeholder="例如：台南">
+  <button onclick="calculateAscendant()">計算上升星座</button>
+
+  <div class="result" id="result"></div>
+
+  <script>
+    async function calculateAscendant() {
+      const date = document.getElementById('birthDate').value;
+      const time = document.getElementById('birthTime').value;
+      const city = document.getElementById('birthCity').value;
+      
+      if (!date || !time || !city) {
+        document.getElementById('result').innerText = '請完整填寫所有欄位';
+        return;
+      }
+
+      try {
+        // 利用 OpenCage 或 Nominatim 等地理 API 取得經緯度
+        const geo = await axios.get(`https://nominatim.openstreetmap.org/search`, {
+          params: {
+            q: city,
+            format: 'json',
+            limit: 1
+          }
+        });
+
+        if (!geo.data.length) {
+          document.getElementById('result').innerText = '找不到該城市的座標';
+          return;
+        }
+
+        const { lat, lon } = geo.data[0];
+
+        // 呼叫後端星盤 API，傳入經緯度與時間
+        const astro = await axios.get(`https://astro-api-cheyuan.vercel.app/api/ascendant`, {
+          params: {
+            date,
+            time,
+            lat,
+            lon
+          }
+        });
+
+        document.getElementById('result').innerText = `你的上升星座是：${astro.data.ascendant}`;
+      } catch (err) {
+        console.error(err);
+        document.getElementById('result').innerText = '發生錯誤，請稍後再試';
+      }
+    }
+  </script>
+</body>
+</html>
