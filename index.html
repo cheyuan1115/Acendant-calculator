@@ -49,7 +49,7 @@
         const { lat, lon } = geo.data[0];
 
         // 呼叫後端星盤 API，傳入經緯度與時間
-        const astro = await axios.get(`https://astro-api-cheyuan.vercel.app/api/ascendant`, {
+const astro = await axios.get(`https://ascendant-api-2.vercel.app/api/ascendant`, {
           params: {
             date,
             time,
